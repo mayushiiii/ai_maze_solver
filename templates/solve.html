@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maze Solver</title>
+</head>
+<body>
+    <h1>Maze Solver</h1>
+    <img src="/maze" alt="Maze Image" id="maze">
+    <script>
+        // Actualizează imaginea periodic
+        setInterval(() => {
+            const maze = document.getElementById("maze");
+            maze.src = "/maze?" + new Date().getTime(); // Evită caching-ul
+        }, 5000); // Actualizare la fiecare 5 secunde
+    </script>
+</body>
+</html>

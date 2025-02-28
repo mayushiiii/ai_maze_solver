@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Maze Solver</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            background-color: #ffeef8;
+            color: #5d3a76;
+        }
+
+        /* Page Layout */
+        h1 {
+            text-align: center;
+            color: #d3559a;
+            margin-top: 20px;
+            font-size: 36px;
+            text-shadow: 1px 1px 2px #ffc7e6;
+        }
+
+        form {
+            max-width: 500px;
+            margin: 20px auto;
+            padding: 20px;
+            background: linear-gradient(to bottom right, #ffd6e8, #ffecf3);
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(220, 150, 190, 0.2);
+            border: 2px solid #ffbbd9;
+        }
+
+        form label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #d3559a;
+        }
+
+        form input,
+        form select,
+        form button {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ffb2d8;
+            border-radius: 8px;
+            font-size: 16px;
+            background: #fff;
+            transition: box-shadow 0.3s ease;
+        }
+
+        form input[type="file"] {
+            padding: 5px;
+        }
+
+        form input:focus,
+        form select:focus {
+            outline: none;
+            box-shadow: 0 0 5px #ff88c2;
+        }
+
+        form button {
+            background-color: #ff7bab;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            font-size: 18px;
+        }
+
+        form button:hover {
+            background-color: #e05f92;
+            transform: translateY(-2px);
+        }
+
+        #maze {
+            display: block;
+            max-width: 80%;
+            margin: 20px auto;
+            border: 2px solid #ffb2d8;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(220, 150, 190, 0.2);
+        }
+
+        /* Solve Maze Button */
+        button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+            color: white;
+            background-color: #f883d2;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        button:hover {
+            background-color: #db6dbb;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            form {
+                margin: 10px;
+                padding: 15px;
+            }
+
+            form input,
+            form select,
+            form button {
+                font-size: 14px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0, 0, 0); /* Fallback color */
+            background-color: rgba(0, 0, 0, 0.4); /* Black w/ opacity */
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #f9f9f9;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            font-size: 22px;
+            color: #d3559a;
+            margin-bottom: 10px;
+        }
+
+        .modal-body {
+            font-size: 16px;
+            color: #333;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Maze Solver</h1>
+    <form method="post" action="/generate" enctype="multipart/form-data">
+        <label for="method">Select Method:</label>
+        <select name="method" id="method">
+            <option value="random">Random</option>
+            <option value="image">Image</option>
+        </select><br><br>
+        <div id="random-fields">
+            <label for="seed">Enter Seed:</label>
+            <input type="number" name="seed" id="seed"><br><br>
+        </div>
+        <div id="image-fields" style="display: none;">
+            <label for="image">Upload Image:</label>
+            <input type="file" name="image" id="image"><br><br>
+        </div>
+        <button type="submit">Generate Maze</button>
+    </form>
+
+    <button onclick="solveMaze()">Solve Maze</button>
+    <img id="maze" src="/maze" alt="Maze Image">
+
+    <!-- The Modal -->
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Error
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="errorMessage"></div>
+        </div>
+    </div>
+
+    <script>
+        const methodSelect = document.getElementById('method');
+        const randomFields = document.getElementById('random-fields');
+        const imageFields = document.getElementById('image-fields');
+
+        methodSelect.addEventListener('change', () => {
+            if (methodSelect.value === 'random') {
+                randomFields.style.display = 'block';
+                imageFields.style.display = 'none';
+            } else {
+                randomFields.style.display = 'none';
+                imageFields.style.display = 'block';
+            }
+        });
+
+        function solveMaze() {
+            fetch('/solve')
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    setInterval(() => {
+                        document.getElementById('maze').src = '/maze?' + new Date().getTime();
+                    }, 500);
+                });
+        }
+
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("error")) {
+            const errorMessage = params.get("error");
+            showModal(errorMessage);
+        }
+
+        function showModal(message) {
+            const modal = document.getElementById('errorModal');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            modal.style.display = "block";
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('errorModal');
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            const modal = document.getElementById('errorModal');
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+
+</html>
