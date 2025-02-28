@@ -2,7 +2,7 @@
 
 ## Programing language
 
-1. Python
+Python
 
 ## Maze Generator:
 - maze generator can be found in maze_gen_base.py
